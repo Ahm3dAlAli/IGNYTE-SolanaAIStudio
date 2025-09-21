@@ -1,0 +1,127 @@
+{
+  "roles": {
+    "market_analyzer": {
+      "description": "Analyzes market conditions, price movements, and trading opportunities",
+      "capabilities": [
+        "price_monitoring",
+        "trend_analysis", 
+        "market_sentiment",
+        "technical_analysis",
+        "fundamental_analysis"
+      ],
+      "required_data": [
+        "price_feeds",
+        "volume_data",
+        "liquidity_metrics"
+      ],
+      "system_prompt_template": "You are a market analysis agent specializing in Solana DeFi. Analyze market conditions, identify trends, and assess trading opportunities with high accuracy."
+    },
+    "risk_manager": {
+      "description": "Manages risk assessment, position sizing, and portfolio protection",
+      "capabilities": [
+        "risk_assessment",
+        "position_sizing",
+        "portfolio_analysis",
+        "volatility_analysis",
+        "drawdown_monitoring"
+      ],
+      "required_data": [
+        "portfolio_positions",
+        "market_volatility",
+        "correlation_data"
+      ],
+      "system_prompt_template": "You are a risk management agent for Solana trading. Your primary responsibility is protecting capital and managing portfolio risk through careful analysis and conservative position sizing."
+    },
+    "strategy_optimizer": {
+      "description": "Optimizes trading strategies, execution timing, and performance metrics",
+      "capabilities": [
+        "strategy_optimization",
+        "execution_timing",
+        "performance_analysis",
+        "parameter_tuning",
+        "backtesting"
+      ],
+      "required_data": [
+        "historical_performance",
+        "execution_costs",
+        "slippage_data"
+      ],
+      "system_prompt_template": "You are a strategy optimization agent for Solana DeFi. Focus on improving strategy performance, optimizing execution, and maximizing risk-adjusted returns."
+    },
+    "decision_maker": {
+      "description": "Makes final trading decisions based on multi-agent consensus",
+      "capabilities": [
+        "decision_making",
+        "consensus_building",
+        "trade_execution",
+        "strategy_coordination",
+        "conflict_resolution"
+      ],
+      "required_data": [
+        "agent_recommendations",
+        "market_context",
+        "risk_parameters"
+      ],
+      "system_prompt_template": "You are a decision-making agent coordinating multiple specialists. Make informed trading decisions based on agent consensus while maintaining strict risk management."
+    },
+    "portfolio_manager": {
+      "description": "Manages portfolio allocation, rebalancing, and overall performance",
+      "capabilities": [
+        "portfolio_management",
+        "asset_allocation", 
+        "rebalancing",
+        "performance_tracking",
+        "diversification"
+      ],
+      "required_data": [
+        "portfolio_holdings",
+        "target_allocations",
+        "performance_metrics"
+      ],
+      "system_prompt_template": "You are a portfolio management agent for Solana assets. Optimize portfolio allocation, manage rebalancing, and track overall performance while maintaining diversification."
+    },
+    "arbitrage_agent": {
+      "description": "Identifies and executes arbitrage opportunities across Solana DEXs",
+      "capabilities": [
+        "arbitrage_detection",
+        "cross_dex_analysis",
+        "price_discrepancy_monitoring",
+        "execution_optimization",
+        "profit_calculation"
+      ],
+      "required_data": [
+        "dex_prices",
+        "liquidity_pools",
+        "transaction_costs"
+      ],
+      "system_prompt_template": "You are an arbitrage specialist for Solana DEXs. Identify profitable arbitrage opportunities across Jupiter, Raydium, Orca and other DEXs while accounting for transaction costs and slippage."
+    },
+    "yield_farmer": {
+      "description": "Manages yield farming strategies and liquidity provision",
+      "capabilities": [
+        "yield_farming",
+        "liquidity_provision",
+        "apr_analysis",
+        "impermanent_loss_calculation",
+        "farm_optimization"
+      ],
+      "required_data": [
+        "yield_rates",
+        "pool_performance",
+        "token_pairs"
+      ],
+      "system_prompt_template": "You are a yield farming specialist for Solana DeFi protocols. Optimize yield farming strategies, manage liquidity positions, and maximize returns while minimizing impermanent loss."
+    }
+  },
+  "capability_definitions": {
+    "price_monitoring": "Real-time monitoring of token prices across DEXs",
+    "trend_analysis": "Technical and fundamental trend analysis",
+    "risk_assessment": "Comprehensive risk evaluation and scoring",
+    "position_sizing": "Optimal position size calculation based on risk",
+    "strategy_optimization": "Performance optimization and parameter tuning",
+    "decision_making": "Final trading decision coordination",
+    "arbitrage_detection": "Cross-DEX arbitrage opportunity identification",
+    "yield_farming": "DeFi yield farming strategy management",
+    "portfolio_management": "Multi-asset portfolio optimization"
+  }
+}

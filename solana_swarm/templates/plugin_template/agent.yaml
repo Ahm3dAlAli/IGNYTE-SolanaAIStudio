@@ -1,0 +1,39 @@
+name: {{plugin_name}}
+role: {{plugin_role}}
+description: "{{plugin_description}}"
+version: "0.1.0"
+environment: development
+log_level: INFO
+
+# LLM Configuration
+llm:
+  provider: ${LLM_PROVIDER}
+  api_key: ${LLM_API_KEY}
+  model: ${LLM_MODEL}
+  temperature: 0.7
+  max_tokens: 1500
+  api_url: ${LLM_API_URL}
+  system_prompt: |
+    You are a {{plugin_role}} agent for Solana DeFi operations.
+    Your role is to {{plugin_description}}.
+    
+    Focus on:
+    1. Solana ecosystem analysis
+    2. DeFi protocol interaction
+    3. Risk-aware decision making
+    4. Clear reasoning with confidence levels
+    
+    Always provide detailed analysis with confidence scores.
+
+# Agent capabilities  
+capabilities:
+  - {{primary_capability}}
+  - analysis
+  - monitoring
+
+# Custom settings
+custom_settings:
+  min_confidence_threshold: 0.7
+  update_interval: 60
+  max_retries: 3
+  timeout: 30
