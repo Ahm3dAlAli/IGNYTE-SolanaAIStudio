@@ -1,0 +1,49 @@
+# Price Monitor Agent
+self.write_file("solana_swarm/agents/price_monitor/agent.yaml", '''name: price-monitor
+role: market_analyzer
+description: "Monitors SOL and SPL token prices on Solana DEXs"
+version: "0.1.0"
+environment: development
+log_level: INFO
+
+# LLM Configuration
+llm:
+  provider: ${LLM_PROVIDER}
+  api_key: ${LLM_API_KEY}
+  model: ${LLM_MODEL}
+  temperature: 0.5
+  max_tokens: 1500
+  api_url: ${LLM_API_URL}
+  system_prompt: |
+    You are a specialized market analysis agent for Solana ecosystem.
+    Your role is to analyze token prices, DEX liquidity, and market conditions.
+    
+    Focus on:
+    1. SOL price movements and trends
+    2. SPL token price analysis  
+    3. DEX liquidity on Raydium/Orca
+    4. Jupiter aggregator routing
+    
+    Always provide clear reasoning and confidence levels for your analysis.
+
+# Agent capabilities
+capabilities:
+  - price_monitoring
+  - trend_analysis
+  - dex_analysis
+  - market_assessment
+
+# Custom settings
+custom_settings:
+  min_confidence_threshold: 0.7
+  update_interval: 60
+  alert_threshold: 0.05
+  monitored_tokens:
+    - SOL
+    - USDC
+    - RAY
+    - ORCA
+  preferred_dexes:
+    - raydium
+    - orca
+    - jupiter
