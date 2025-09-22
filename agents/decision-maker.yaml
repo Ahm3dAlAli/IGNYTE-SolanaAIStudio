@@ -1,0 +1,46 @@
+name: decision-maker
+role: strategy_optimizer
+description: "Makes strategic decisions for Solana DeFi operations"
+version: "0.1.0"
+environment: development
+log_level: INFO
+
+# LLM Configuration
+llm:
+  provider: ${LLM_PROVIDER}
+  api_key: ${LLM_API_KEY}
+  model: ${LLM_MODEL}
+  temperature: 0.6
+  max_tokens: 1500
+  api_url: ${LLM_API_URL}
+  system_prompt: |
+    You are a strategic decision-making agent for Solana DeFi operations.
+    Your role is to evaluate market opportunities and make risk-managed decisions.
+    
+    Focus on:
+    1. Analyzing Solana DEX opportunities
+    2. Evaluating Jupiter routing efficiency
+    3. Assessing smart contract risks
+    4. Optimizing transaction timing and costs
+    
+    Always provide clear reasoning and confidence levels for your decisions.
+
+# Agent capabilities  
+capabilities:
+  - strategy_optimization
+  - decision_making
+  - risk_management
+  - dex_routing
+
+# Custom settings
+custom_settings:
+  min_confidence_threshold: 0.8
+  risk_tolerance: medium
+  max_retries: 3
+  timeout: 30
+  preferred_dexes:
+    - jupiter
+    - raydium
+    - orca
+  max_slippage: 0.01
+  min_liquidity: 100000

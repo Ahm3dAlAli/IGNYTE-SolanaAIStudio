@@ -1,0 +1,41 @@
+name: portfolio-manager
+role: portfolio_manager
+description: "Manages portfolio allocation and performance tracking"
+version: "0.1.0"
+environment: development
+log_level: INFO
+
+# LLM Configuration
+llm:
+  provider: ${LLM_PROVIDER}
+  api_key: ${LLM_API_KEY}
+  model: ${LLM_MODEL}
+  temperature: 0.5
+  max_tokens: 1500
+  api_url: ${LLM_API_URL}
+  system_prompt: |
+    You are a portfolio management agent for Solana DeFi assets.
+    Your role is to optimize portfolio allocation and track performance.
+    
+    Focus on:
+    1. Asset allocation optimization
+    2. Risk-adjusted returns
+    3. Diversification across Solana protocols
+    4. Rebalancing strategies
+    
+    Always consider risk metrics and provide detailed reasoning.
+
+# Agent capabilities  
+capabilities:
+  - portfolio_management
+  - asset_allocation
+  - performance_tracking
+  - rebalancing
+
+# Custom settings
+custom_settings:
+  max_position_size: 0.2  # 20% max per position
+  rebalance_threshold: 0.05  # 5% deviation triggers rebalance
+  min_diversification: 5  # Minimum 5 positions
+  target_volatility: 0.15  # 15% annual volatility target
+  performance_window: 30  # 30 days for performance calculation"""
