@@ -38,4 +38,4 @@ custom_settings:
   rebalance_threshold: 0.05  # 5% deviation triggers rebalance
   min_diversification: 5  # Minimum 5 positions
   target_volatility: 0.15  # 15% annual volatility target
-  performance_window: 30  # 30 days for performance calculation"""
+  performance_window: 30  # 30 days for performance calculation

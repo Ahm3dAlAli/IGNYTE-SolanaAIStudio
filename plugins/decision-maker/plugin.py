@@ -73,13 +73,16 @@ class DecisionMakerPlugin(AgentPlugin):
             rationale += f"3) Our {self.risk_tolerance} risk tolerance with {self.max_slippage*100:.1f}% max slippage. "
             
             # Get current Solana network stats
-            network_stats = await self.solana_connection.get_network_stats()
-            current_tps = network_stats.get('tps', 0)
-            
-            if current_tps > 2000:
-                rationale += f"High network throughput ({current_tps:.0f} TPS) supports immediate execution. "
-            else:
-                rationale += f"Moderate network activity ({current_tps:.0f} TPS) suggests normal execution times. "
+            try:
+                network_stats = await self.solana_connection.get_network_stats()
+                current_tps = network_stats.get('tps', 0)
+                
+                if current_tps > 2000:
+                    rationale += f"High network throughput ({current_tps:.0f} TPS) supports immediate execution. "
+                else:
+                    rationale += f"Moderate network activity ({current_tps:.0f} TPS) suggests normal execution times. "
+            except:
+                rationale += "Network stats unavailable but proceeding with analysis. "
             
             action = "Recommended Action: "
             confidence = 0.0
@@ -109,14 +112,12 @@ class DecisionMakerPlugin(AgentPlugin):
             action += f"Set stops at {abs(price_change)*1.5:.1f}% to protect against adverse moves."
             
             return {
-                'context': context_analysis,
-                'strategy': strategy,
-                'rationale': rationale,
-                'action': action,
+                'observation': context_analysis,
+                'reasoning': strategy + rationale,
+                'conclusion': action,
                 'action_type': action_type,
                 'confidence': confidence,
                 'risk_level': risk_level,
-                'network_tps': current_tps,
                 'preferred_dex': self.preferred_dexes[0] if self.preferred_dexes else 'jupiter'
             }
             
