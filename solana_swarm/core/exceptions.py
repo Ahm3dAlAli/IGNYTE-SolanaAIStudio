@@ -41,42 +41,43 @@ class RaydiumError(DEXError):
 class OrcaError(DEXError):
     """Exception for Orca DEX errors."""
     pass
-''')
 
-    def write_plugin_files(self):
-        """Write plugin system files"""
-        
-        # Plugin base classes
-        self.write_file("solana_swarm/plugins/__init__.py", '''"""
-Plugin System for Solana Swarm Intelligence
-Provides extensibility for custom agents while maintaining core functionality
-"""
+class TransactionError(SolanaError):
+    """Exception for transaction-related errors."""
+    pass
 
-from typing import Dict, Type
-from .base import AgentPlugin
-from .loader import PluginLoader
+class NetworkError(SolanaError):
+    """Exception for network connectivity issues."""
+    pass
 
-# Global plugin registry
-_plugin_registry: Dict[str, Type[AgentPlugin]] = {}
+class WalletError(SolanaError):
+    """Exception for wallet-related errors."""
+    pass
 
-def register_plugin(name: str, plugin_class: Type[AgentPlugin]) -> None:
-    """Register a new agent plugin"""
-    _plugin_registry[name] = plugin_class
+class TokenError(SolanaError):
+    """Exception for SPL token-related errors."""
+    pass
 
-def get_plugin(name: str) -> Type[AgentPlugin]:
-    """Get a registered plugin by name"""
-    if name not in _plugin_registry:
-        raise ValueError(f"Plugin '{name}' not found")
-    return _plugin_registry[name]
+class InsufficientFundsError(SolanaError):
+    """Exception for insufficient funds errors."""
+    pass
 
-def list_plugins() -> Dict[str, Type[AgentPlugin]]:
-    """List all registered plugins"""
-    return dict(_plugin_registry)
+class SlippageError(DEXError):
+    """Exception for slippage-related errors."""
+    pass
 
-__all__ = [
-    'AgentPlugin',
-    'PluginLoader',
-    'register_plugin',
-    'get_plugin',
-    'list_plugins',
-]
+class SecurityError(AgentError):
+    """Exception for security-related errors."""
+    pass
+
+class ValidationError(AgentError):
+    """Exception for validation errors."""
+    pass
+
+class ConsensusError(AgentError):
+    """Exception for consensus-related errors."""
+    pass
+
+class MemoryError(AgentError):
+    """Exception for memory management errors."""
+    pass
