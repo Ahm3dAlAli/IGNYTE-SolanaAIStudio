@@ -122,7 +122,7 @@ class JupiterClient:
     async def swap(
         self,
         quote: JupiterQuote,
-        user_public_key: PublicKey,
+        user_public_key: Pubkey,
         compute_unit_price_micro_lamports: Optional[int] = None
     ) -> Dict[str, Any]:
         """Execute token swap using Jupiter."""
@@ -154,27 +154,39 @@ class JupiterClient:
             raise JupiterError(f"Swap failed: {e}")
     
     async def get_price(
-        self,
-        input_mint: str,
-        output_mint: str = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",  # USDC
-        amount: int = 1000000  # 1 token with 6 decimals
-    ) -> Dict[str, Any]:
+    self,
+    input_mint: str,
+    output_mint: str = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",  # USDC
+    amount: int = 1000000000  # 1 SOL (9 decimals)
+) -> Dict[str, Any]:
         """Get price for a token pair."""
         try:
             quote = await self.get_quote(input_mint, output_mint, amount)
-            price = float(quote.out_amount) / float(quote.in_amount)
+            
+            # Fixed calculation accounting for decimals
+            # SOL has 9 decimals, USDC has 6 decimals
+            input_decimals = 9  # SOL
+            output_decimals = 6  # USDC
+            
+            # Normalize the amounts
+            normalized_input = amount / (10 ** input_decimals)
+            normalized_output = float(quote.out_amount) / (10 ** output_decimals)
+            
+            # Price = output / input
+            price = normalized_output / normalized_input
             
             return {
                 "price": price,
                 "input_mint": input_mint,
                 "output_mint": output_mint,
-                "amount": amount
+                "amount": amount,
+                "out_amount": quote.out_amount
             }
             
         except Exception as e:
             logger.error(f"Failed to get Jupiter price: {e}")
             raise JupiterError(f"Price fetch failed: {e}")
-    
+        
     async def get_supported_tokens(self) -> List[Dict[str, Any]]:
         """Get list of supported tokens."""
         await self._ensure_session()

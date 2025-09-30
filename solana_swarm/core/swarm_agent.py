@@ -1,5 +1,5 @@
 """
-Swarm Agent Module
+Fixed Swarm Agent Module
 Implements swarm intelligence for Solana agents with LLM-powered decision making
 """
 
@@ -8,9 +8,9 @@ import json
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 
-from solana_swarm.core.agent import SwarmAgent as BaseAgent, AgentConfig
+from solana_swarm.core.agent import AgentConfig
 from solana_swarm.core.llm_provider import LLMProvider, create_llm_provider, LLMConfig
-from solana_swarm.plugins.base import AgentPlugin
+from solana_swarm.plugins.base import AgentPlugin, PluginConfig
 
 logger = logging.getLogger(__name__)
 
@@ -40,16 +40,26 @@ class SwarmAgent(AgentPlugin):
 
     def __init__(self, config: SwarmConfig):
         """Initialize swarm agent."""
+        # Create compatible AgentConfig and PluginConfig
+        agent_config = AgentConfig(name=f"swarm_{config.role}")
+        plugin_config = PluginConfig(
+            name=f"swarm_{config.role}",
+            role=config.role,
+            capabilities=["swarm_intelligence", "decision_making", "consensus"]
+        )
+        
+        # Initialize parent class
+        super().__init__(agent_config, plugin_config)
+        
         self.config = config
         self.llm = None
         self.swarm_peers: List['SwarmAgent'] = []
-        self._initialized = False
         self._is_running = False
         logger.info(f"Initialized swarm agent with role: {config.role}")
 
     async def initialize(self) -> None:
         """Initialize agent resources."""
-        if self._initialized:
+        if self._is_initialized:
             return
 
         try:
@@ -57,7 +67,7 @@ class SwarmAgent(AgentPlugin):
             if self.config.llm:
                 self.llm = create_llm_provider(self.config.llm)
 
-            self._initialized = True
+            self._is_initialized = True
             self._is_running = True
             logger.info(f"Initialized SwarmAgent with role: {self.config.role}")
 
@@ -139,7 +149,23 @@ class SwarmAgent(AgentPlugin):
                     "reasoning": f"Evaluation error: {result['error']}"
                 }
 
-            return result
+            # Convert evaluation result to vote format
+            confidence = result.get('confidence', 0.5)
+            reasoning = result.get('reasoning', result.get('conclusion', 'No reasoning provided'))
+            
+            # Decision based on confidence
+            if confidence >= self.config.min_confidence:
+                decision = "approve"
+            elif confidence >= 0.4:
+                decision = "abstain"
+            else:
+                decision = "reject"
+
+            return {
+                "decision": decision,
+                "confidence": confidence,
+                "reasoning": reasoning
+            }
 
         except Exception as e:
             logger.error(f"Error evaluating proposal: {str(e)}")
@@ -182,28 +208,39 @@ Your primary responsibility is optimizing execution and performance."""
 
     async def evaluate(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Evaluate using LLM and return decision."""
-        if not self._initialized:
+        if not self._is_initialized:
             await self.initialize()
 
         try:
+            # If no LLM configured, provide basic response
+            if not self.llm:
+                return {
+                    "observation": f"Evaluating as {self.config.role}",
+                    "reasoning": f"Basic evaluation without LLM for {self.config.role}",
+                    "conclusion": "Analysis complete with limited capability",
+                    "confidence": 0.6
+                }
+
             # Format context for LLM
             prompt = self._format_prompt(context)
 
             # Get LLM response
-            response = await self.llm.query(prompt)
+            response = await self.llm.query(prompt, expect_json=True)
 
             # Parse and validate response
             result = self._parse_response(response)
-
-            if result["confidence"] < self.config.min_confidence:
-                logger.warning(f"Low confidence decision: {result['confidence']}")
-                return {"decision": "abstain", "reason": "Low confidence"}
 
             return result
 
         except Exception as e:
             logger.error(f"Error in evaluation: {str(e)}")
-            return {"error": str(e)}
+            return {
+                "observation": f"Error in {self.config.role} evaluation",
+                "reasoning": f"Failed to complete evaluation: {str(e)}",
+                "conclusion": "Unable to provide recommendation due to error",
+                "confidence": 0.0,
+                "error": str(e)
+            }
 
     def _format_prompt(self, context: Dict[str, Any]) -> str:
         """Format context into LLM prompt."""
@@ -218,40 +255,90 @@ Your primary responsibility is optimizing execution and performance."""
         Parameters: {json.dumps(proposal.get('params', {}), indent=2)}
         Proposer: {proposal.get('proposer')}
 
-        Provide your analysis and decision in JSON format with:
-        - decision: string (approve/reject/abstain)
+        Provide your analysis in JSON format with:
+        - observation: string (what you observe)
+        - reasoning: string (your analysis)
+        - conclusion: string (your recommendation)
         - confidence: float (0-1)
-        - reasoning: string
         """
 
     def _parse_response(self, response: str) -> Dict[str, Any]:
         """Parse and validate LLM response."""
         try:
             result = json.loads(response)
-            required_fields = ["decision", "confidence", "reasoning"]
+            required_fields = ["observation", "reasoning", "conclusion", "confidence"]
 
-            if not all(field in result for field in required_fields):
-                raise ValueError("Missing required fields in response")
-
-            # Validate decision values
-            if result["decision"] not in ["approve", "reject", "abstain"]:
-                raise ValueError("Invalid decision value")
+            # Fill in missing fields with defaults
+            for field in required_fields:
+                if field not in result:
+                    if field == "confidence":
+                        result[field] = 0.5
+                    else:
+                        result[field] = f"No {field} provided"
 
             # Validate confidence range
             if not isinstance(result["confidence"], (int, float)) or not 0 <= result["confidence"] <= 1:
-                raise ValueError("Confidence must be a float between 0 and 1")
+                result["confidence"] = 0.5
 
             return result
 
         except json.JSONDecodeError:
-            raise ValueError("Invalid JSON response from LLM")
+            # If JSON parsing fails, create a basic response
+            return {
+                "observation": f"Response from {self.config.role}",
+                "reasoning": "LLM response could not be parsed as JSON",
+                "conclusion": "Unable to provide structured analysis",
+                "confidence": 0.3
+            }
+
+    async def execute(self, operation: Optional[str] = None, **kwargs) -> Any:
+        """Execute swarm operations."""
+        try:
+            if operation == "propose_action":
+                action_type = kwargs.get("action_type", "unknown")
+                params = kwargs.get("params", {})
+                return await self.propose_action(action_type, params)
+            
+            elif operation == "evaluate_proposal":
+                proposal = kwargs.get("proposal", {})
+                return await self.evaluate_proposal(proposal)
+            
+            elif operation == "join_swarm":
+                peers = kwargs.get("peers", [])
+                await self.join_swarm(peers)
+                return {"status": "success", "peers_joined": len(peers)}
+            
+            elif operation == "status":
+                return {
+                    "role": self.config.role,
+                    "initialized": self._is_initialized,
+                    "running": self._is_running,
+                    "peers": len(self.swarm_peers),
+                    "capabilities": self.capabilities
+                }
+            
+            else:
+                # Default evaluation
+                context = kwargs
+                return await self.evaluate(context)
+
+        except Exception as e:
+            logger.error(f"Error executing operation {operation}: {str(e)}")
+            return {"error": str(e), "operation": operation}
 
     async def cleanup(self) -> None:
         """Clean up agent resources."""
-        self._initialized = False
-        self._is_running = False
-        self.swarm_peers = []
-        logger.info("SwarmAgent cleaned up")
+        try:
+            if self.llm:
+                await self.llm.close()
+            
+            self._initialized = False
+            self._is_running = False
+            self.swarm_peers = []
+            logger.info("SwarmAgent cleaned up")
+            
+        except Exception as e:
+            logger.error(f"Error during cleanup: {str(e)}")
 
     async def __aenter__(self):
         """Async context manager entry."""

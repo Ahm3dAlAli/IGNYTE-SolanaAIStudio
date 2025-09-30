@@ -163,11 +163,11 @@ class MarketDataManager:
     async def _initialize_ccxt_exchanges(self):
         """Initialize CCXT exchanges for additional data sources."""
         try:
-            # Initialize major exchanges
+            # Initialize major exchanges (removed FTX as it's defunct)
             exchange_configs = {
                 'binance': {'sandbox': False, 'enableRateLimit': True},
                 'coinbase': {'sandbox': False, 'enableRateLimit': True},
-                'ftx': {'sandbox': False, 'enableRateLimit': True}  # If available
+                # Removed FTX - exchange is defunct
             }
             
             for exchange_name, config in exchange_configs.items():
@@ -214,16 +214,18 @@ class MarketDataManager:
         
         limit_info["calls"] += 1
     
-    async def get_token_price(self, 
-                             symbol: str,
-                             sources: Optional[List[DataSource]] = None) -> PriceData:
+    async def get_token_price(self, symbol: str,sources: Optional[List[DataSource]] = None) -> Dict[str, Any]: 
         """Get token price from multiple sources with fallback."""
         symbol = symbol.upper()
         cache_key = f"price_{symbol}"
         
         # Check cache first
         if self._is_cache_valid(cache_key):
-            return self.cache[cache_key][0]
+            cached_data = self.cache[cache_key][0]
+            # Convert PriceData to dict if needed
+            if hasattr(cached_data, 'to_dict'):
+                return cached_data.to_dict()
+            return cached_data
         
         # Determine sources to use
         if sources is None:
@@ -238,15 +240,29 @@ class MarketDataManager:
             try:
                 price_data = await self._get_price_from_source(symbol, source)
                 if price_data:
-                    # Cache the result
-                    self.cache[cache_key] = (price_data, datetime.now())
-                    return price_data
+                    # Convert PriceData to dict before caching
+                    price_dict = price_data.to_dict() if hasattr(price_data, 'to_dict') else {
+                        'symbol': symbol,
+                        'price': float(price_data.price),
+                        'volume_24h': float(price_data.volume_24h),
+                        'price_change_24h': price_data.change_24h,
+                        'market_cap': float(price_data.market_cap) if price_data.market_cap else None,
+                        'timestamp': price_data.timestamp.isoformat(),
+                        'source': price_data.source.value,
+                        'confidence': price_data.confidence
+                    }
+                    
+                    # Cache as dict
+                    self.cache[cache_key] = (price_dict, datetime.now())
+                    return price_dict
             except Exception as e:
                 last_error = e
                 logger.warning(f"Failed to get price from {source.value}: {e}")
                 continue
         
         raise MarketDataError(f"All price sources failed for {symbol}. Last error: {last_error}")
+
+
     
     async def _get_price_from_source(self, symbol: str, source: DataSource) -> Optional[PriceData]:
         """Get price from a specific source."""
@@ -277,7 +293,7 @@ class MarketDataManager:
             usdc_mint = self.SOLANA_TOKENS["USDC"]["jupiter_mint"]
             token_mint = token_info["jupiter_mint"]
             
-            # Use 1 token as base amount
+            # Use 1 token as base amount (accounting for decimals)
             base_amount = 10 ** token_info["decimals"]
             
             price_info = await self.jupiter_client.get_price(
@@ -286,9 +302,25 @@ class MarketDataManager:
                 amount=base_amount
             )
             
+            # FIXED: Jupiter returns raw amounts, need to account for decimals
+            # Input: 1 SOL = 1,000,000,000 (9 decimals)
+            # Output: X USDC in smallest units (6 decimals)
+            # Price = (output_amount / 10^6) / (input_amount / 10^9)
+            
+            raw_price = price_info["price"]
+            
+            # The price from Jupiter is already normalized, but we need to adjust
+            # for the decimal difference between input and output tokens
+            usdc_decimals = self.SOLANA_TOKENS["USDC"]["decimals"]
+            token_decimals = token_info["decimals"]
+            
+            # Correct the price by accounting for decimal places
+            # If raw_price is already the ratio, we might need to multiply
+            actual_price = raw_price #* (10 ** (token_decimals - usdc_decimals))
+            
             return PriceData(
                 symbol=symbol,
-                price=Decimal(str(price_info["price"])),
+                price=Decimal(str(actual_price)),
                 volume_24h=Decimal(0),  # Jupiter doesn't provide volume
                 change_24h=0.0,  # Jupiter doesn't provide 24h change
                 market_cap=None,

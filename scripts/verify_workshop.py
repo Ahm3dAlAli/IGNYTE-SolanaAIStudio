@@ -9,15 +9,16 @@ import os
 import sys
 import logging
 from pathlib import Path
+from dotenv import load_dotenv
+
 
 # Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from rich.console import Console
 from rich.table import Table
 from rich import print as rprint
 
 console = Console()
+load_dotenv()
 
 async def verify_imports():
     """Verify all core imports work."""

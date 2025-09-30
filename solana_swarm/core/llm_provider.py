@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class LLMConfig:
     """Configuration for LLM providers"""
     provider: str = "openrouter"
-    api_key: str = ""
+    api_key: str = "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"
     model: str = "anthropic/claude-3.5-sonnet"
     temperature: float = 0.7
     max_tokens: int = 2000
