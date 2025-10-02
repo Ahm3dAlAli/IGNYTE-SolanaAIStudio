@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 """
 Comprehensive Test Suite for Solana Swarm Intelligence Framework
 Tests all integrations, agents, and swarm functionality

@@ -109,7 +109,16 @@ class MarketDataManager:
                  coingecko_api_key: Optional[str] = None,
                  enable_ccxt: bool = True):
         """Initialize market data manager."""
-        self.jupiter_client = jupiter_client
+        if jupiter_client is None:
+            try:
+                from ..integrations.jupiter.client import JupiterClient
+                self.jupiter_client = JupiterClient()
+                logger.info("Initialized Jupiter client")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Jupiter client: {e}")
+                self.jupiter_client = None
+        else:
+            self.jupiter_client = jupiter_client
         self.coingecko_api_key = coingecko_api_key
         self.enable_ccxt = enable_ccxt
         
@@ -281,9 +290,14 @@ class MarketDataManager:
         
         return None
     
+    
     async def _get_price_jupiter(self, symbol: str) -> Optional[PriceData]:
         """Get price from Jupiter aggregator."""
         try:
+            if not self.jupiter_client:
+                logger.debug("Jupiter client not available for pricing")
+                return None
+                
             if symbol not in self.SOLANA_TOKENS:
                 return None
             
@@ -296,42 +310,33 @@ class MarketDataManager:
             # Use 1 token as base amount (accounting for decimals)
             base_amount = 10 ** token_info["decimals"]
             
-            price_info = await self.jupiter_client.get_price(
-                input_mint=token_mint,
-                output_mint=usdc_mint,
-                amount=base_amount
-            )
-            
-            # FIXED: Jupiter returns raw amounts, need to account for decimals
-            # Input: 1 SOL = 1,000,000,000 (9 decimals)
-            # Output: X USDC in smallest units (6 decimals)
-            # Price = (output_amount / 10^6) / (input_amount / 10^9)
-            
-            raw_price = price_info["price"]
-            
-            # The price from Jupiter is already normalized, but we need to adjust
-            # for the decimal difference between input and output tokens
-            usdc_decimals = self.SOLANA_TOKENS["USDC"]["decimals"]
-            token_decimals = token_info["decimals"]
-            
-            # Correct the price by accounting for decimal places
-            # If raw_price is already the ratio, we might need to multiply
-            actual_price = raw_price #* (10 ** (token_decimals - usdc_decimals))
-            
-            return PriceData(
-                symbol=symbol,
-                price=Decimal(str(actual_price)),
-                volume_24h=Decimal(0),  # Jupiter doesn't provide volume
-                change_24h=0.0,  # Jupiter doesn't provide 24h change
-                market_cap=None,
-                timestamp=datetime.now(),
-                source=DataSource.JUPITER,
-                confidence=0.95
-            )
+            try:
+                price_info = await self.jupiter_client.get_price(
+                    input_mint=token_mint,
+                    output_mint=usdc_mint,
+                    amount=base_amount
+                )
+                
+                actual_price = price_info["price"]
+                
+                return PriceData(
+                    symbol=symbol,
+                    price=Decimal(str(actual_price)),
+                    volume_24h=Decimal(0),
+                    change_24h=0.0,
+                    market_cap=None,
+                    timestamp=datetime.now(),
+                    source=DataSource.JUPITER,
+                    confidence=0.95
+                )
+            except Exception as e:
+                logger.warning(f"Jupiter price fetch failed for {symbol}: {e}")
+                return None
             
         except Exception as e:
-            logger.error(f"Jupiter price fetch failed for {symbol}: {e}")
+            logger.error(f"Error in Jupiter price fetch for {symbol}: {e}")
             return None
+
     
     async def _get_price_coingecko(self, symbol: str) -> Optional[PriceData]:
         """Get price from CoinGecko."""
@@ -568,15 +573,20 @@ class MarketDataManager:
             logger.error(f"Orca data fetch failed: {e}")
             raise
     
+    
     async def _get_jupiter_data(self) -> DexData:
         """Get Jupiter aggregator data."""
-        # Jupiter is an aggregator, so we'll return routing statistics
         try:
             if not self.jupiter_client:
                 raise MarketDataError("Jupiter client not available")
             
             # Get supported tokens count as a proxy for routes
-            tokens = await self.jupiter_client.get_supported_tokens()
+            try:
+                tokens = await self.jupiter_client.get_supported_tokens()
+                token_count = len(tokens) if tokens else 0
+            except Exception as e:
+                logger.warning(f"Failed to get Jupiter token count: {e}")
+                token_count = 0
             
             return DexData(
                 name="Jupiter",
@@ -584,14 +594,16 @@ class MarketDataManager:
                 volume_24h=Decimal(0),  # Would need specific API
                 volume_7d=Decimal(0),
                 fees_24h=Decimal(0),
-                pools_count=len(tokens),  # Number of supported tokens
+                pools_count=token_count,
                 timestamp=datetime.now(),
                 source="jupiter_api"
             )
             
         except Exception as e:
             logger.error(f"Jupiter data fetch failed: {e}")
-            raise
+            raise MarketDataError(f"Jupiter data unavailable: {e}")
+
+
     
     async def get_market_overview(self) -> Dict[str, Any]:
         """Get comprehensive market overview."""
