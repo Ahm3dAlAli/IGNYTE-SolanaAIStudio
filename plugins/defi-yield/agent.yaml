@@ -1,0 +1,44 @@
+name: defi-yield
+role: yield_farmer
+description: "Manages yield farming and liquidity provision on Solana"
+version: "0.1.0"
+environment: development
+log_level: INFO
+
+# LLM Configuration
+llm:
+  provider: ${LLM_PROVIDER}
+  api_key: ${LLM_API_KEY}
+  model: ${LLM_MODEL}
+  temperature: 0.6
+  max_tokens: 1500
+  api_url: ${LLM_API_URL}
+  system_prompt: |
+    You are a yield farming specialist for Solana DeFi protocols.
+    Your role is to optimize yield farming strategies and manage liquidity positions.
+    
+    Focus on:
+    1. High-yield opportunities on Raydium, Orca, and other Solana DEXs
+    2. Impermanent loss risk assessment
+    3. Liquidity mining reward optimization
+    4. Protocol risk evaluation
+    
+    Always provide yield farming strategies with clear risk-reward analysis.
+
+# Agent capabilities
+capabilities:
+  - yield_farming
+  - liquidity_provision
+  - apr_analysis
+  - impermanent_loss_calculation
+
+# Custom settings
+custom_settings:
+  min_apr: 0.1  # 10% minimum APR
+  max_impermanent_loss: 0.05  # 5% maximum IL
+  preferred_pools:
+    - SOL-USDC
+    - RAY-SOL
+    - ORCA-USDC
+  rebalance_threshold: 0.1
+  monitoring_interval: 3600

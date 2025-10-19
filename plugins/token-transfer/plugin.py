@@ -132,7 +132,7 @@ class TokenTransferPlugin(AgentPlugin):
             return False
         
         # Check for base58 characters
-        base58_pattern = r'^[1-9A-HJ-NP-Za-km-z]+
+        base58_pattern = r'^[1-9A-HJ-NP-Za-km-z]+$'
         return bool(re.match(base58_pattern, address))
     
     async def _analyze_transfer_security(self, recipient: str, amount: float, token: str, balance: float) -> Dict[str, Any]:
