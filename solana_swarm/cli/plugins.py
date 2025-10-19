@@ -7,6 +7,7 @@ import shutil
 from pathlib import Path
 from typing import Optional
 
+import click
 from rich import print as rprint
 from rich.table import Table
 from rich.console import Console
@@ -15,22 +16,21 @@ from solana_swarm.plugins.loader import PluginLoader
 
 console = Console()
 
-async def manage_plugins(action: str, name: Optional[str] = None):
-    """Manage plugins for Solana Swarm"""
-    
-    if action == "list":
-        await list_plugins()
-    elif action == "install" and name:
-        await install_plugin(name)
-    elif action == "remove" and name:
-        await remove_plugin(name)
-    elif action == "info" and name:
-        await show_plugin_info(name)
-    else:
-        rprint("❌ [red]Invalid action or missing plugin name[/red]")
-        rprint("Available actions: list, install, remove, info")
 
-async def list_plugins():
+@click.group()
+def plugins():
+    """Manage Solana Swarm plugins"""
+    pass
+
+
+@plugins.command()
+def list():
+    """List all available and loaded plugins"""
+    import asyncio
+    asyncio.run(_list_plugins())
+
+
+async def _list_plugins():
     """List all available and loaded plugins"""
     
     # Show available plugins
@@ -59,9 +59,10 @@ async def list_plugins():
             capabilities = getattr(plugin, "capabilities", [])
             rprint(f"  • **{name}** ({role}) - {', '.join(capabilities)}")
 
+
 def scan_available_plugins() -> dict:
     """Scan for available plugins in the system"""
-    plugins = {}
+    plugins_dict = {}
     
     # Scan agent directories
     agent_dirs = [
@@ -88,15 +89,24 @@ def scan_available_plugins() -> dict:
                             except:
                                 pass
                         
-                        plugins[item] = {
+                        plugins_dict[item] = {
                             "role": role,
                             "path": item_path,
                             "has_config": os.path.exists(config_file)
                         }
     
-    return plugins
+    return plugins_dict
 
-async def install_plugin(name: str):
+
+@plugins.command()
+@click.argument('name')
+def install(name: str):
+    """Install a plugin from template or repository"""
+    import asyncio
+    asyncio.run(_install_plugin(name))
+
+
+async def _install_plugin(name: str):
     """Install a plugin from template or repository"""
     try:
         # For now, create from template
@@ -132,7 +142,16 @@ async def install_plugin(name: str):
     except Exception as e:
         rprint(f"❌ [red]Failed to install plugin {name}: {e}[/red]")
 
-async def remove_plugin(name: str):
+
+@plugins.command()
+@click.argument('name')
+def remove(name: str):
+    """Remove a plugin"""
+    import asyncio
+    asyncio.run(_remove_plugin(name))
+
+
+async def _remove_plugin(name: str):
     """Remove a plugin"""
     try:
         plugin_paths = [
@@ -153,7 +172,16 @@ async def remove_plugin(name: str):
     except Exception as e:
         rprint(f"❌ [red]Failed to remove plugin {name}: {e}[/red]")
 
-async def show_plugin_info(name: str):
+
+@plugins.command()
+@click.argument('name')
+def info(name: str):
+    """Show detailed plugin information"""
+    import asyncio
+    asyncio.run(_show_plugin_info(name))
+
+
+async def _show_plugin_info(name: str):
     """Show detailed plugin information"""
     try:
         # Try to load plugin
@@ -177,6 +205,8 @@ async def show_plugin_info(name: str):
             rprint(f"\n⚙️ [cyan]Configuration:[/cyan]")
             for key, value in config.custom_settings.items():
                 rprint(f"  • {key}: {value}")
+        
+        await loader.cleanup()
         
     except Exception as e:
         rprint(f"❌ [red]Failed to get plugin info for {name}: {e}[/red]")
