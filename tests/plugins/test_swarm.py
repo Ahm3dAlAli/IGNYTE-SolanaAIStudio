@@ -2,7 +2,7 @@
 import asyncio
 from solana_swarm.core.swarm_agent import SwarmAgent, SwarmConfig
 from solana_swarm.core.llm_provider import LLMConfig
-
+import os
 async def test_swarm():
     """Test agent swarm functionality"""
     print("🐝 Testing Agent Swarm...")
