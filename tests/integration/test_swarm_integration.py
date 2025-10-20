@@ -10,6 +10,7 @@ from solana_swarm.core.swarm_agent import SwarmAgent, SwarmConfig
 from solana_swarm.core.market_data import MarketDataManager
 from solana_swarm.plugins.loader import PluginLoader
 from solana_swarm.core.llm_provider import LLMConfig
+import asyncio
 
 
 @pytest.mark.integration

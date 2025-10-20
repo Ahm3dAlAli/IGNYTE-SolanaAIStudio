@@ -51,3 +51,4 @@ ipython>=8.0.0
 jupyter>=1.0.0
 ccxt>=4.0.0
 asyncio>=3.4.0
+pytest-xprocess>=0.22.0
