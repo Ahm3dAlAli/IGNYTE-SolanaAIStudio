@@ -4,10 +4,13 @@ import { Github, CheckCircle } from 'lucide-react';
 import { api, createAgentWebSocket, createMarketWebSocket } from './services/api';
 import type { Agent, AgentMetrics, MarketData, Transaction } from './types/agent';
 import Dashboard from './components/Dashboard'; // Import Dashboard
+import { WalletContextProvider } from './components/WalletContextProvider';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
-function App() {
+function AppContent() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(false); // New state for login status
+  const { connected, connect, disconnecting } = useWallet();
 
   // Data states, moved from Dashboard to App for centralized fetching
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -20,15 +23,20 @@ function App() {
     setMenuOpen(!menuOpen);
   };
 
-  // Function to simulate login - will replace with actual login logic later
-  const handleLogin = () => {
-    setLoggedIn(true);
-    // In a real app, this would involve authentication and setting tokens
+  // Handle login by connecting wallet
+  const handleLogin = async () => {
+    if (!connected) {
+      try {
+        await connect();
+      } catch (error) {
+        console.error("Failed to connect wallet:", error);
+      }
+    }
   };
 
   // Fetch initial data only if logged in
   useEffect(() => {
-    if (!loggedIn) return;
+    if (!connected) return;
 
     const fetchData = async () => {
       try {
@@ -53,11 +61,11 @@ function App() {
     };
 
     fetchData();
-  }, [loggedIn]); // Dependency on loggedIn
+  }, [connected]); // Dependency on connected state
 
   // Set up WebSockets for real-time updates only if logged in
   useEffect(() => {
-    if (!loggedIn) return;
+    if (!connected) return;
 
     const agentWs = createAgentWebSocket((data) => {
       console.log("Agent WebSocket message:", data);
@@ -80,7 +88,7 @@ function App() {
       agentWs.disconnect();
       marketWs.disconnect();
     };
-  }, [loggedIn]); // Dependency on loggedIn
+  }, [connected]); // Dependency on connected state
 
   return (
     <div className="app-container">
@@ -109,7 +117,7 @@ function App() {
         )}
       </header>
 
-      {loggedIn ? (
+      {connected ? (
         <Dashboard
           agents={agents}
           metrics={metrics}
@@ -127,61 +135,35 @@ function App() {
               </h1>
               <p className="hero-subtitle">UNLIMITLESS AI X DEFI ECOSYSTEM</p>
               <div className="hero-actions">
-                <button className="btn-primary" onClick={handleLogin}> {/* Added onClick for login */}
-                  PRODUCTS <span className="arrow">→</span>
-                </button>
+                <WalletMultiButton className="btn-primary" />
                 <button className="btn-secondary">
                   DOCS
                 </button>
               </div>
             </div>
             <div className="hero-diagram-placeholder">
-              <pre className="ascii-art">
-&#96;
-   .:;!1FC80L1*+:.
-  :*1C80T1*+
-  ;*1GGL*:;
-  ;*FGG+;;
- :*1LLt*:;
- :*1CCF*:;
- ;*1CCt*:;
- ;*1LCC:;;
- :*1GTF:;;
- :*1DF:;;;
- :*1CF:;;;
- :*1CF:;;;
- :*1CF1:;;
- :*1LL:;;;
- :*1CC:;;;
- :*1CT:;;;
- :*GCF:;;;
- ;*GT1:;;;
- ;*FC1:;;;
- ;*FC1:;;;
-&#96;
-              </pre>
+              <img src="/multi-agentic-ai-copilot.png" alt="Multi Agentic AI Copilot Diagram" style={{ maxWidth: '100%', height: 'auto' }} />
             </div>
           </main>
 
           <section className="content-section">
             <div className="content-block reverse">
               <div className="content-text">
-                <p className="section-label">SOLANA AI</p> {/* Changed from JECTA AI */}
+                <p className="section-label">SOLANA AI</p>
                 <h2>Multi Agentic AI Copilot</h2>
-                <p>Solana AI Hub offers a unique Model Context Protocol and Intent-based structure to give users the best experience possible with an AI Copilot on the Solana Ecosystem. Adapted with all of the features on core Solana Infrastructures and much more.</p> {/* Adapted text for Solana */}
+                <p>Solana AI Hub offers a unique Model Context Protocol and Intent-based structure to give users the best experience possible with an AI Copilot on the Solana Ecosystem. Adapted with all of the features on core Solana Infrastructures and much more.</p>
                 <ul className="feature-list">
                   <li><CheckCircle size={16} className="feature-icon" /> Whole token analysis with a single prompt</li>
-                  <li><CheckCircle size={16} className="feature-icon" /> Adapted to all Solana Infrastructures</li> {/* Adapted text for Solana */}
+                  <li><CheckCircle size={16} className="feature-icon" /> Adapted to all Solana Infrastructures</li>
                   <li><CheckCircle size={16} className="feature-icon" /> Unlimited AI-Capabilities</li>
                 </ul>
                 <div className="section-actions">
-                  <button className="btn-primary" onClick={handleLogin}>Open App</button> {/* Added onClick for login */}
+                  <WalletMultiButton className="btn-primary">Open App</WalletMultiButton>
                   <button className="btn-secondary">Check Docs</button>
                 </div>
               </div>
               <div className="content-diagram">
-                {/* Placeholder for the diagram from the image */}
-                <p>[Diagram for Multi Agentic AI Copilot]</p>
+                <img src="/multi-agentic-ai-copilot.png" alt="Multi Agentic AI Copilot Diagram" style={{ maxWidth: '100%', height: 'auto' }} />
               </div>
             </div>
           </section>
@@ -189,22 +171,21 @@ function App() {
           <section className="content-section">
             <div className="content-block">
               <div className="content-text">
-                <p className="section-label">SOLANA SWARM</p> {/* Changed from PLANET JECTA */}
+                <p className="section-label">SOLANA SWARM</p>
                 <h2>TOKENIZATION OF AI AGENTS</h2>
-                <p>Creating value for AI Agents by embedding their knowledge to the chain. Their knowledges are being fetched from the Solana chain itself as SPL standard tokens.</p> {/* Adapted text for Solana */}
+                <p>Creating value for AI Agents by embedding their knowledge to the chain. Their knowledges are being fetched from the Solana chain itself as SPL standard tokens.</p>
                 <ul className="feature-list">
-                  <li><CheckCircle size={16} className="feature-icon" /> Works with Solana Swarm's Core LLM Intent Engine</li> {/* Adapted text for Solana */}
+                  <li><CheckCircle size={16} className="feature-icon" /> Works with Solana Swarm's Core LLM Intent Engine</li>
                   <li><CheckCircle size={16} className="feature-icon" /> Ownership security based privacy for each Agent</li>
                   <li><CheckCircle size={16} className="feature-icon" /> On-Chain knowledge</li>
                 </ul>
                 <div className="section-actions">
-                  <button className="btn-primary" onClick={handleLogin}>Open App</button> {/* Added onClick for login */}
+                  <WalletMultiButton className="btn-primary">Open App</WalletMultiButton>
                   <button className="btn-secondary">Check Docs</button>
                 </div>
               </div>
               <div className="content-diagram">
-                {/* Placeholder for the diagram from the image */}
-                <p>[Diagram for Tokenization of AI Agents]</p>
+                <img src="/tokenization-of-ai-agents.png" alt="Tokenization of AI Agents Diagram" style={{ maxWidth: '100%', height: 'auto' }} />
               </div>
             </div>
           </section>
@@ -213,14 +194,21 @@ function App() {
 
       <footer className="footer">
         <div className="footer-content">
-          <span>© {new Date().getFullYear()} Solana AI Hub. All rights reserved.</span> {/* Changed name */}
+          <span>© {new Date().getFullYear()} Solana AI Hub. All rights reserved.</span>
           <div className="footer-social">
             <a href="https://github.com/solana-swarm/solana-swarm" aria-label="GitHub" target="_blank" rel="noopener noreferrer"><Github size={20} /></a>
-            {/* Add other social icons if needed */}
           </div>
         </div>
       </footer>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <WalletContextProvider>
+      <AppContent />
+    </WalletContextProvider>
   );
 }
 
