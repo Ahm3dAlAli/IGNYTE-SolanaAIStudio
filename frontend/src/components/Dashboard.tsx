@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { Activity, Brain, TrendingUp, Wallet, Network, Zap } from 'lucide-react';
 import type { Agent, AgentMetrics, MarketData, Transaction } from '../types/agent';
 import AgentCard from './AgentCard';
@@ -6,94 +5,75 @@ import MarketOverview from './MarketOverview';
 import TransactionList from './TransactionList';
 import SwarmActivity from './SwarmActivity';
 
-const Dashboard = () => {
-  const [agents] = useState<Agent[]>([
-    {
-      id: '1',
-      name: 'Price Monitor',
-      role: 'price_monitor',
-      status: 'active',
-      confidence: 0.87,
-      lastAction: 'Analyzing SOL/USDC on Jupiter',
-      capabilities: ['price_monitoring', 'dex_analysis'],
-      timestamp: new Date().toISOString()
-    },
-    {
-      id: '2',
-      name: 'Risk Manager',
-      role: 'risk_manager',
-      status: 'active',
-      confidence: 0.92,
-      lastAction: 'Assessing position sizes',
-      capabilities: ['risk_assessment', 'portfolio_management'],
-      timestamp: new Date().toISOString()
-    },
-    {
-      id: '3',
-      name: 'Strategy Optimizer',
-      role: 'strategy_optimizer',
-      status: 'analyzing',
-      confidence: 0.78,
-      lastAction: 'Optimizing route via Raydium',
-      capabilities: ['strategy_optimization', 'execution'],
-      timestamp: new Date().toISOString()
-    }
-  ]);
+interface DashboardProps {
+  agents: Agent[];
+  metrics: AgentMetrics | null;
+  marketData: MarketData | null;
+  transactions: Transaction[];
+  walletBalance: number | null;
+}
 
-  const [metrics, setMetrics] = useState<AgentMetrics>({
-    messagesExchanged: 0,
-    decisionsMade: 0,
-    analysisCompleted: 0,
-    transactionsSimulated: 0,
-    averageConfidence: 0.85,
-    uptime: 0
-  });
+const Dashboard = ({ agents, metrics, marketData, transactions, walletBalance }: DashboardProps) => {
+  // No more local state for data, it comes from props
 
-  const [marketData, setMarketData] = useState<MarketData>({
-    token: 'SOL',
-    price: 142.35,
-    change24h: 5.32,
-    volume24h: 2840000000,
-    liquidity: 425000000,
-    timestamp: new Date().toISOString(),
-    source: 'Jupiter'
-  });
+  // MetricCard component definition (moved inside Dashboard for now, could be its own file)
+  interface MetricCardProps {
+    icon: React.ReactNode;
+    label: string;
+    value: string;
+    color: string;
+  }
 
-  const [transactions] = useState<Transaction[]>([
-    {
-      id: '1',
-      type: 'analyze',
-      status: 'success',
-      timestamp: new Date().toISOString(),
-      confidence: 0.87
-    }
-  ]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMetrics(prev => ({
-        ...prev,
-        messagesExchanged: prev.messagesExchanged + Math.floor(Math.random() * 3),
-        analysisCompleted: prev.analysisCompleted + (Math.random() > 0.7 ? 1 : 0),
-        uptime: prev.uptime + 1
-      }));
-
-      setMarketData(prev => ({
-        ...prev,
-        price: prev.price + (Math.random() - 0.5) * 2,
-        change24h: prev.change24h + (Math.random() - 0.5) * 0.5,
-        timestamp: new Date().toISOString()
-      }));
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
+  const MetricCard = ({ icon, label, value, color }: MetricCardProps) => {
+    return (
+      <div style={{
+        background: 'var(--color-bg-secondary)',
+        borderRadius: 'var(--border-radius)',
+        padding: '20px',
+        border: '1px solid var(--color-bg-tertiary)',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        cursor: 'default'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
+      >
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginBottom: '8px'
+        }}>
+          <div style={{ color }}>{icon}</div>
+          <span style={{
+            color: 'var(--color-text-secondary)',
+            fontSize: '0.875rem'
+          }}>
+            {label}
+          </span>
+        </div>
+        <div style={{
+          fontSize: '2rem',
+          fontWeight: 700,
+          color
+        }}>
+          {value}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div style={{
       padding: '24px',
       maxWidth: '1400px',
-      margin: '0 auto'
+      margin: '0 auto',
+      marginTop: '60px' // Adjust for fixed navbar
     }}>
       <div style={{
         marginBottom: '32px'
@@ -105,7 +85,7 @@ const Dashboard = () => {
           marginBottom: '8px'
         }}>
           <Brain size={32} color="var(--color-solana)" />
-          <h1 style={{ margin: 0 }}>Solana AI Hub</h1>
+          <h1 style={{ margin: 0 }}>Solana AI Hub Dashboard</h1>
         </div>
         <p style={{
           color: 'var(--color-text-secondary)',
@@ -130,19 +110,19 @@ const Dashboard = () => {
         <MetricCard
           icon={<Zap size={20} />}
           label="Decisions Made"
-          value={metrics.decisionsMade.toString()}
+          value={metrics?.decisionsMade !== undefined ? metrics.decisionsMade.toString() : 'N/A'}
           color="var(--color-info)"
         />
         <MetricCard
           icon={<TrendingUp size={20} />}
           label="Analysis Completed"
-          value={metrics.analysisCompleted.toString()}
+          value={metrics?.analysisCompleted !== undefined ? metrics.analysisCompleted.toString() : 'N/A'}
           color="var(--color-success)"
         />
         <MetricCard
           icon={<Network size={20} />}
           label="Messages Exchanged"
-          value={metrics.messagesExchanged.toString()}
+          value={metrics?.messagesExchanged !== undefined ? metrics.messagesExchanged.toString() : 'N/A'}
           color="var(--color-purple)"
         />
       </div>
@@ -153,7 +133,7 @@ const Dashboard = () => {
         gap: '24px',
         marginBottom: '32px'
       }}>
-        <MarketOverview data={marketData} />
+        {marketData && <MarketOverview data={marketData} />}
 
         <div style={{
           background: 'var(--color-bg-secondary)',
@@ -177,7 +157,7 @@ const Dashboard = () => {
               marginBottom: '12px'
             }}>
               <span style={{ color: 'var(--color-text-secondary)' }}>Balance</span>
-              <span style={{ fontWeight: 600 }}>2.45 SOL</span>
+              <span style={{ fontWeight: 600 }}>{walletBalance !== null ? `${walletBalance.toFixed(2)} SOL` : 'N/A'}</span>
             </div>
             <div style={{
               display: 'flex',
@@ -230,59 +210,8 @@ const Dashboard = () => {
         gap: '24px',
         marginBottom: '32px'
       }}>
-        <SwarmActivity metrics={metrics} />
+        {metrics && <SwarmActivity metrics={metrics} />}
         <TransactionList transactions={transactions} />
-      </div>
-    </div>
-  );
-};
-
-interface MetricCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  color: string;
-}
-
-const MetricCard = ({ icon, label, value, color }: MetricCardProps) => {
-  return (
-    <div style={{
-      background: 'var(--color-bg-secondary)',
-      borderRadius: 'var(--border-radius)',
-      padding: '20px',
-      border: '1px solid var(--color-bg-tertiary)',
-      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-      cursor: 'default'
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.transform = 'translateY(-2px)';
-      e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.transform = 'translateY(0)';
-      e.currentTarget.style.boxShadow = 'none';
-    }}
-    >
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        marginBottom: '8px'
-      }}>
-        <div style={{ color }}>{icon}</div>
-        <span style={{
-          color: 'var(--color-text-secondary)',
-          fontSize: '0.875rem'
-        }}>
-          {label}
-        </span>
-      </div>
-      <div style={{
-        fontSize: '2rem',
-        fontWeight: 700,
-        color
-      }}>
-        {value}
       </div>
     </div>
   );
