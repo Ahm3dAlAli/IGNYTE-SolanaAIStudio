@@ -137,7 +137,7 @@ function App() {
             </div>
             <div className="hero-diagram-placeholder">
               <pre className="ascii-art">
-{\`
+&#96;
    .:;!1FC80L1*+:.
   :*1C80T1*+
   ;*1GGL*:;
@@ -158,7 +158,7 @@ function App() {
  ;*GT1:;;;
  ;*FC1:;;;
  ;*FC1:;;;
-`}
+&#96;
               </pre>
             </div>
           </main>
