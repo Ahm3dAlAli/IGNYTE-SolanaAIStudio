@@ -1,0 +1,46 @@
+.agent-card {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.agent-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 198, 255, 0.2);
+}
+
+.agent-card h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+.agent-card p {
+  font-size: 1rem;
+  color: #a0a0a0;
+  margin-bottom: 2rem;
+  flex-grow: 1;
+}
+
+.deploy-btn {
+  background-color: #0072ff;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.deploy-btn:hover {
+  background-color: #0056b3;
+}
