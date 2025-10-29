@@ -1,0 +1,38 @@
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #000000; /* Black background */
+  color: #ffffff;
+  border-bottom: 1px solid #333; /* Subtle border */
+}
+
+.logo a {
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 1.8rem; /* Larger font size */
+  font-weight: bold;
+  font-family: 'Poppins', sans-serif; /* Modern font */
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+}
+
+.launch-app-btn {
+  background-color: #1a1a1a; /* Dark background */
+  color: #ffffff;
+  border: 1px solid #333; /* Subtle border */
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px; /* Rounded corners */
+  cursor: pointer;
+  font-size: 1rem;
+  margin-left: 1rem;
+  transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.launch-app-btn:hover {
+  background-color: #333; /* Darker on hover */
+}
