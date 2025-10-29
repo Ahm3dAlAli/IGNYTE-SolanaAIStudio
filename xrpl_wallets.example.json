@@ -1,0 +1,20 @@
+{
+  "RLUSD": {
+    "cold_address": "rN7n7otQDd6FczFgLdlqtyMVrn3HMgCYK9",
+    "cold_seed": "sEdTM1uX8pu2do5XvTnutH6HsouMaM2",
+    "hot_address": "rLHzPsX6oXkzU9S7J7TTgfuaBUVLxKb2Ta",
+    "hot_seed": "sEdV19BLfeQeKdEXyYA4NhjPJe6XBd1"
+  },
+  "mUSD": {
+    "cold_address": "rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY",
+    "cold_seed": "ssPaT8CyQLVtLPfY5VgRXmBVXNF22",
+    "hot_address": "rU6K7V3Po4snVhBBaU29sesqs2qTQJWDw1",
+    "hot_seed": "ssS9wMxZTg73kqE7x5rXqK5pQNw3T"
+  },
+  "RLUSD+": {
+    "cold_address": "rLHzPsX6oXkzU9S7J7tygaBuVLxKb2Ta",
+    "cold_seed": "sEdV19BLfeQeKdEXyYA4NhjPJe6XBd1",
+    "hot_address": "rN7n7otQDd6FczFgLdlqtyMVrn3HMgCYK9",
+    "hot_seed": "sEdTM1uX8pu2do5XvTnutH6HsouMaM2"
+  }
+}

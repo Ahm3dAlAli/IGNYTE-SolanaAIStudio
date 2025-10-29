@@ -60,6 +60,10 @@ keypairs/
 wallets/
 .solana/
 
+# XRPL
+xrpl_wallets.json
+*_wallets.json
+
 # Test coverage
 .coverage
 htmlcov/

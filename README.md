@@ -17,6 +17,13 @@ A powerful multi-agent framework for building AI-powered trading strategies on S
 - **SPL Token Support**: Full support for Solana Program Library tokens
 - **Real-time Data**: Live market data and network statistics
 
+### 💎 XRPL Integration (NEW!)
+- **Yield-Bearing Tokens**: Issue RLUSD, mUSD, and RLUSD+ on XRP Ledger
+- **Token Chain**: Complete XRP → RLUSD → mUSD → RLUSD+ conversion path
+- **Testnet Support**: Full testnet implementation for testing and development
+- **Cold/Hot Wallets**: Secure wallet architecture for token issuance
+- **See**: [XRPL Quick Start Guide](docs/XRPL_QUICKSTART.md) | [Full Documentation](docs/XRPL_TOKENS.md)
+
 ### 🧠 AI-Powered Decision Making
 - **LLM Integration**: Support for multiple AI providers (OpenRouter, OpenAI)
 - **Context-Aware**: Agents understand market conditions and network state
@@ -191,6 +198,46 @@ async def defi_interaction():
         )
         print(f"Swap result: {result}")
 ```
+
+### 4. XRPL Yield-Bearing Tokens
+
+```python
+from solana_swarm.integrations.xrpl import XRPLClient, TokenIssuer
+from decimal import Decimal
+
+async def issue_xrpl_tokens():
+    # Initialize XRPL client (testnet)
+    client = XRPLClient(network_url="https://s.altnet.rippletest.net:51234")
+    issuer = TokenIssuer(client)
+
+    # Create complete yield-bearing token chain: XRP → RLUSD → mUSD → RLUSD+
+    tokens = issuer.create_yield_bearing_chain(
+        rlusd_supply=Decimal("1000000"),
+        musd_supply=Decimal("1000000"),
+        rlusd_plus_supply=Decimal("1000000")
+    )
+
+    # Save wallet configuration
+    issuer.save_wallet_config("xrpl_wallets.json")
+
+    # Check balances
+    balances = issuer.get_all_balances()
+    print(f"Token balances: {balances}")
+
+    # Print summary
+    issuer.print_summary()
+```
+
+**Quick Start:**
+```bash
+# Issue tokens on XRPL testnet
+python scripts/issue_xrpl_tokens.py --save-config
+
+# Test token functionality
+python scripts/test_xrpl_tokens.py --config xrpl_wallets.json
+```
+
+See [XRPL Quick Start Guide](docs/XRPL_QUICKSTART.md) for detailed instructions.
 
 ## 🔧 CLI Usage
 
